@@ -1,0 +1,9 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+#pagecontent {
+	background-color: hsl(0, 0%, 26%);
+	min-height: 100%;
+}

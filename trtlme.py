@@ -7,11 +7,10 @@ import json
 import os
 import binascii
 import logging
+import traceback
 
-app.config.from_object(os.environ['APP_SETTINGS'])
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app = Flask(__name__, static_url_path='/static')
-app.config.from_object(__name__)
+app.config.from_object(os.environ['APP_SETTINGS'])
 
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] - %(message)s')
 
@@ -24,29 +23,11 @@ app.logger.setLevel(logging.DEBUG)
 app.logger.addHandler(handler)
 app.logger.info("App Started!")
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/trtlme'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 application = app
 
+from models import User,Payment
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    address = db.Column(db.String(99), nullable=False)
-    payment_id = db.Column(db.String(32), nullable=False)
-    url = db.Column(db.String(64), nullable=False)
-    message = db.Column(db.String(512), nullable=False)
-    turtlehash = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Integer, nullable=False)
-    def __repr__(self):
-        return '<User %u with Address %s and turtle %i>' % (self.url,self.address,self.turtlehash)
-
-class Payment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    payment_id = db.Column(db.String(32), nullable=False)
-    paid = db.Column(db.Boolean, default=False, nullable=False)
-    def __repr__(self):
-        return '<%p Status: %i>' % (self.payment_id,self.paid)
 
 def get_payment_id():
     random_32_bytes = os.urandom(32)
@@ -100,7 +81,8 @@ def post_payment():
             )
             db.session.add(user)
             db.session.commit()
-        except:
+        except Exception as e:
+            app.logger.info(traceback.format_exc())
             return json.dumps({'status':'Fail',
                 'reason':'Your transaction could not be processed'}),500
         return json.dumps({'status':'Success',

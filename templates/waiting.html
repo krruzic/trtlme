@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+<h1>This page has been claimed by {{ user["address"] }} and is awaiting payment</h1>
+<h2>Price {{ user["price"] }}</h2>
+{% endblock %}

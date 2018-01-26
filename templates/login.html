@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+ <form action="/login" method="post"> 
+  YOUR SECRET PAYMENT ID:<br>
+  <input type="text" name="payment_id"><br>
+  <input type="submit" value="Submit">
+</form> 
+{% endblock %}

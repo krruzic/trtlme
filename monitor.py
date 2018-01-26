@@ -1,8 +1,20 @@
-import sqlite3
-import requests
 import json
 from pprint import pprint
-conn = sqlite3.connect("trtlme.db")
+
+import requests
+import psycopg2
+
+hostname = 'localhost'
+username = 'postgres'
+password = 'postgres'
+database = 'trtlme'
+
+conn = psycopg2.connect(
+    host=hostname,
+    user=username,
+    password=password,
+    dbname=database
+    )
 c = conn.cursor()
 
 CURRENT_ID = 0
@@ -10,9 +22,15 @@ RPC_URL = "http://127.0.0.1:8070/json_rpc"
 HEADERS = {'content-type': 'application/json'}
 
 def mark_transfer(conn, payment):
-    sql = '''REPLACE INTO Payment(payment_id,paid) VALUES(?,?)'''
-    x = c.execute(sql, payment)
-    print(x)
+    sql = '''
+    insert into payment (payment_id, paid) values (%(p)s, %(st)s) 
+    on conflict (payment_id) do update set (payment_id, paid) = (%(p)s, %(st)s) 
+    where payment.payment_id = %(p)s;'''
+    x = c.execute(sql,{'p':payment[0],'st':payment[1]})
+    pprint(x)
+    s = '''select * from payment'''
+    x = c.execute(s)
+    conn.commit()
     return c.lastrowid
 
 def get_status():
@@ -28,6 +46,7 @@ def get_status():
          data=json.dumps(rpc_input),
          headers=HEADERS) 
     return response.json()
+
 def process_transaction_status(payment_id,price):
     transactions = []
     print(payment_id)
@@ -58,9 +77,9 @@ def process_transaction_status(payment_id,price):
         unlocktime+=int(t['unlockTime'])
         amount+=int(t['amount'])
     if ((unlocktime) == 0 or (unlocktime <= (bc  - 40))) and amount>=price:
-        p = (payment_id,1)
+        p = (payment_id,True)
     else:
-        p = (payment_id,0)
+        p = (payment_id,False)
     pprint(p)
     print("Transactions: ", len(transactions))
     x = mark_transfer(conn,p)
@@ -69,9 +88,10 @@ def process_transaction_status(payment_id,price):
 
 def run():
     while True:
-        c.execute("SELECT * FROM User")
+        c.execute("SELECT * FROM public.user")
         rows = c.fetchall()
         for row in rows:
+            print(row)
             process_transaction_status(row[2],row[6])
 
 

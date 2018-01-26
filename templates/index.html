@@ -6,15 +6,21 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
- <form action="/payment" method="post"> 
-  url:<br>
-  <input type="text" name="url"><br>
-  message:<br>
-  <input type="text" name="message"><br>
-  hash:<br>
-  <input type="number" name="hash"><br>
-  address:<br>
-  <input type="text" name="address">
-  <input type="submit" value="Submit">
-</form> 
+<section class="section main-section">
+  <div class="container">
+    <div class="content">
+      <form action="/payment" method="post"> 
+        url:<br>
+        <input type="text" name="url"><br>
+        message:<br>
+        <input type="text" name="message"><br>
+        hash:<br>
+        <input type="number" name="hash"><br>
+        address:<br>
+        <input type="text" name="address">
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+  </div>
+</section>
 {% endblock %}
